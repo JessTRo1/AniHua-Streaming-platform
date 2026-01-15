@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  email            String              @unique
+  username         String?
+  password         String
+  profileImage     String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  watchList        WatchList[]
+  continueWatching ContinueWatching[]
+  notifications    Notification[]
+}
+
+model Anime {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  anilistId   Int      @unique              # AniList API ID
+  title       String
+  description String?
+  coverImage  String?
+  bannerImage String?
+  episodes    Int?
+  status      String?                       # "FINISHED", "RELEASING", "NOT_YET_RELEASED"
+  seasonYear  Int?
+  genres      String[]
+  averageScore Int?
+  popularity  Int?
+  format      String?                       # "TV", "MOVIE", "OVA", "ONA", "SPECIAL"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WatchList {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  animeId   Int                            # AniList anime ID
+  status    String                         # "WATCHING", "COMPLETED", "PLAN_TO_WATCH", "DROPPED", "PAUSED"
+  rating    Int?                           # User's rating 1-10
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+}
+
+model ContinueWatching {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  animeId     Int                          # AniList anime ID
+  episode     Int                          # Current episode number
+  timestamp   Int      @default(0)         # Video position in seconds
+  totalTime   Int?                         # Total episode duration (optional)
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+}
+
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  animeId   Int                            # AniList anime ID
+  title     String                         # e.g., "New Episode Available"
+  message   String                         # e.g., "Episode 12 of Naruto is now available"
+  episode   Int?                           # Episode number (if applicable)
+  type      String                         # "NEW_EPISODE", "ANIME_COMPLETED", "SEASON_STARTED"
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
