@@ -1,0 +1,26 @@
+/* Variables for theme */
+:root {
+  --color-anime-dark: #0a0a12;
+  --color-anime-darker: #07070d;
+  --color-anime-card: #1a1a2e;
+  --color-anime-accent: #ff2e63;
+}
+
+/* Dark theme specific styles */
+.dark-theme {
+  color-scheme: dark;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-anime-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-anime-accent);
+  border-radius: 5px;
+}
