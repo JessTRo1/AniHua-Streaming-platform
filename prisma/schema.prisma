@@ -19,6 +19,8 @@ model User {
   watchList        WatchList[]
   continueWatching ContinueWatching[]
   notifications    Notification[]
+  lastActive       DateTime?
+  preferences Json? 
 }
 
 model Anime {
@@ -37,6 +39,10 @@ model Anime {
   format      String?                       // "TV", "MOVIE", "OVA", "ONA", "SPECIAL"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  @@index([popularity])
+  @@index([averageScore])
+  @@index([seasonYear])
+  @@index([format])
 }
 
 model WatchList {
