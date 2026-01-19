@@ -17,6 +17,8 @@ model User {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   watchList        WatchList[]
+  favourites       Favourites[]
+  history          History[]
   continueWatching ContinueWatching[]
   notifications    Notification[]
   lastActive       DateTime?
@@ -84,4 +86,25 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])
+}
+
+model History {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  animeId   Int
+  episode   Int 
+  watchedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, watchedAt])
+}
+
+model Favourites {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  animeId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, animeId])
 }

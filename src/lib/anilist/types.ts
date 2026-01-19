@@ -2,16 +2,18 @@ export interface User {
     id: string;
     email: string;
     username?: string;
-    avatarUrl?: string;
+    password: string;
+    profileImage?: string;
     createdAt: Date;
     updatedAt: Date;
     watchlist: number[];
     favorites: number[];
     history: Record<string, number>;
-    notificationsEnabled: boolean;
-    lastActiveAt: Date;
-    continueWatching: Record<string, number>; 
-    
+    lastActive: Date;
+    continueWatching: {animeId: number; episode: number}[];
+    preferences: {
+        theme: 'light' | 'dark' | 'system';
+    };
 }
 
 export interface Anime {

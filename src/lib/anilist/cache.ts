@@ -1,8 +1,10 @@
 import { LRUCache } from 'lru-cache';
 
-// Create a cache instance for Anilist data
+// Cache instance for Anilist data
 
-export const anilistCache = new LRUCache<string, unknown>({
+type AnilistCacheData = Anime | SearchResult | Record<string, unknown>;
+
+export const anilistCache = new LRUCache<string, AnilistCacheData>({
 
     max: 500, // Maximum number of items in cache
 

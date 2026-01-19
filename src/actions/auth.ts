@@ -1,6 +1,6 @@
 'use server';
 
-import { hash } from 'bcryptjs';
+import bcrypt, { hash } from 'bcryptjs';
 import { prisma } from '@/lib/anilist/prisma';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
@@ -41,10 +41,10 @@ export async function register(formData: FormData): Promise<AuthResponse> {
             },
         });
         if (userExists) {
-            return { error: 'Registration failed. Please try again.' };
+            return { error: 'Email already exists' };
         }
 
-        // Ensure JWT_SECRET is defined
+        // Check if JWT_SECRET defined
         const jwtSecret = process.env.JWT_SECRET;
         if (!jwtSecret) {
             throw new Error('JWT_SECRET environment variable not set');
@@ -91,6 +91,76 @@ export async function register(formData: FormData): Promise<AuthResponse> {
 }
 
 // Login function
+
+const loginSchema = z.object({
+    username: z.string().optional(),
+    email: z.string().optional(),
+    password: z.string().min(8),
+}).refine((data) => data.username || data.email, { message: 'Either username or email is required' });
+
+export async function login(formData: FormData): Promise<AuthResponse> {
+    try {
+        const { username, email, password } = Object.fromEntries(formData.entries()) as {
+            username?: string;
+            email?: string;
+            password: string;
+        };
+
+        // Zod validation
+        const validated = loginSchema.parse({ username, email, password });
+
+        // Find user by email or username
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                     validated.email ? { email: validated.email } : undefined,
+                     validated.username ? { username: validated.username } : undefined 
+                ].filter(Boolean) as object[],
+            }
+        });
+
+        // User not found
+        if (!user) {
+            return { error: 'Invalid username/email or password' };
+        }
+
+        // Check password
+        const isMatch = await bcrypt.compare(validated.password, user.password);
+        if (!isMatch) {
+            return { error: 'Invalid username/email or password' };
+        }
+
+        // Check if JWT_SECRET defined
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw new Error('JWT_SECRET environment variable not set');
+        }
+
+        // Create JWT token
+        const token = sign(
+            { userId: user.id, email: user.email, username: user.username },
+            process.env.JWT_SECRET as string,
+            {
+                expiresIn: '7d',
+            }
+        );
+
+        // Set cookie
+        const cookieStore = await cookies();
+        cookieStore.set('auth-token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+        });
+        return { success: true, userId: user.id, token };
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { error: 'Invalid input data', details: error.issues };
+        }
+        return { error: (error as Error).message };
+    }
+}
 
 // Logout function
 export async function logout() {
