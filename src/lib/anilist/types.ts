@@ -92,3 +92,5 @@ export interface AnilistSearchResponse {
     };
 }
 
+export type AnilistCacheData = Anime | SearchResult | Record<string, unknown>;
+
