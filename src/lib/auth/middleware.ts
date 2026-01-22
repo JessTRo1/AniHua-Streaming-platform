@@ -1,7 +1,7 @@
 'use server'
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
-import { jwtPayload } from '@/types/types';
+import { jwtPayload } from '@/types/user';
 
 
 
@@ -15,7 +15,7 @@ import { jwtPayload } from '@/types/types';
  * 
  * @example
  * const user = await authMiddleware();
- * console.log(user.userId); // "507f1f77bcf86cd799439011"
+ * console.log(user.userId); // 
  */
 export async function authMiddleware() {
     // Extract token from cookies
