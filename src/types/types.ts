@@ -1,7 +1,7 @@
 export interface User {
     id: string;
     email: string;
-    username?: string;
+    userName?: string;
     password: string;
     profileImage?: string;
     createdAt: Date;
@@ -93,4 +93,12 @@ export interface AnilistSearchResponse {
 }
 
 export type AnilistCacheData = Anime | SearchResult | Record<string, unknown>;
+
+export interface jwtPayload {
+    userId: string;
+    email: string;
+    userName: string | undefined;
+    iat: number;
+    exp: number;
+}
 

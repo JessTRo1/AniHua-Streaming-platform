@@ -1,5 +1,5 @@
 import { LRUCache } from 'lru-cache';
-import type { AnilistCacheData, Anime } from './types.js';
+import type { AnilistCacheData, Anime } from '../../types/types.js';
 
 // Cache instance for Anilist data
 

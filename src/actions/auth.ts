@@ -58,13 +58,13 @@ export async function register(formData: FormData): Promise<AuthResponse> {
             data: {
                 email: validated.email,
                 password: hashedPassword,
-                username: validated.userName,
+                userName: validated.userName,
             },
         });
 
         // Create JWT token
         const token = sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, userName: user.userName },
             process.env.JWT_SECRET as string,
             {
                 expiresIn: '7d',
@@ -93,41 +93,41 @@ export async function register(formData: FormData): Promise<AuthResponse> {
 // Login function
 
 const loginSchema = z.object({
-    username: z.string().optional(),
+    userName: z.string().optional(),
     email: z.string().optional(),
     password: z.string().min(8),
-}).refine((data) => data.username || data.email, { message: 'Either username or email is required' });
+}).refine((data) => data.userName || data.email, { message: 'Either username or email is required' });
 
 export async function login(formData: FormData): Promise<AuthResponse> {
     try {
-        const { username, email, password } = Object.fromEntries(formData.entries()) as {
-            username?: string;
+        const { userName, email, password } = Object.fromEntries(formData.entries()) as {
+            userName?: string;
             email?: string;
             password: string;
         };
 
         // Zod validation
-        const validated = loginSchema.parse({ username, email, password });
+        const validated = loginSchema.parse({ userName, email, password });
 
         // Find user by email or username
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
                      validated.email ? { email: validated.email } : undefined,
-                     validated.username ? { username: validated.username } : undefined 
+                     validated.userName ? { userName: validated.userName } : undefined 
                 ].filter(Boolean) as object[],
             }
         });
 
         // User not found
         if (!user) {
-            return { error: 'Invalid username/email or password' };
+            return { error: 'Invalid userName/email or password' };
         }
 
         // Check password
         const isMatch = await bcrypt.compare(validated.password, user.password);
         if (!isMatch) {
-            return { error: 'Invalid username/email or password' };
+            return { error: 'Invalid userName/email or password' };
         }
 
         // Check if JWT_SECRET defined
@@ -138,7 +138,7 @@ export async function login(formData: FormData): Promise<AuthResponse> {
 
         // Create JWT token
         const token = sign(
-            { userId: user.id, email: user.email, username: user.username },
+            { userId: user.id, email: user.email, userName: user.userName },
             process.env.JWT_SECRET as string,
             {
                 expiresIn: '7d',
