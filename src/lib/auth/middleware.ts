@@ -3,8 +3,6 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { jwtPayload } from '@/types/user';
 
-
-
 /**
  * Middleware to protect routes by verifying JWT authentication token.
  * Extracts token from cookies, validates it, and returns user information.
